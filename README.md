@@ -1,7 +1,7 @@
 # mongo-bulk-delete-file
 This repository contains a method for efficiently deleting numerous files stored in MongoDB. Uses GridFS to randomly generate image files (`.png`) and text files (`.txt`). In MongoDB, use GridFS for storing files larger than 16 MB. GridFS stores files in two collections `fs.chunks`, `fs.files`. Our goal is to find only image files(`.png`) among numerous documents and delete them all in both two collections.
 
-If you only want to see how to delete them, jump to number 6.
+If you only want to see how to delete them, jump to `step 3 and 4`.
 
 ## 1. DB Setting
 Make your own test database. If you have one, just move on to next step.
@@ -55,4 +55,70 @@ const uri = 'mongodb://HOSTNAME:PORT/DATABASENAME';
     fileInfo: {"fileName":"test2_1682930059546.png","uploadDate":1682930059546,"size":261120,"fileStoredId":"644f798ba08b56e03e07a162"}
     insertOne done
     Finished. close db connection.
+    ```
+
+## 3. Delete files - javascript version
+There are many ways to delete document in MongoDB. `deleteOne`, `deleteMany`, `drop database` etc. This time we will use `deleteMany`.
+- Create a cursor. In MongoDB, a cursor is a pointer to the result set of a query. We will query a file that fileName ends with `.png`.
+- Use `limit` option. The maximum value of limit() for a MongoDB cursor is 2147483647 but it's generally a good practice to use limit() to retrieve a reasonable number of documents at a time, and use pagination if you need to retrieve additional documents.
+- With `fileStoredId`, find files that are stored in `fs.chunks`, `fs.files` collection.
+- Delete them with `deleteMany` method.
+
+- Run `delete.js`
+```
+$ node delete.js
+Connected MongoDB!
+loop - 1 - batch length - 10
+doc: fileStoredId - 644f8444a9c885fbdb250279 fileName - test2_1682932804837.png
+doc: fileStoredId - 644f8444a9c885fbdb25027c fileName - test2_1682932804851.png
+...
+loop - 10 - batch length - 10
+doc: fileStoredId - 644f844b73678206ad735a9d fileName - test2_1682932811753.png
+doc: fileStoredId - 644f844b73678206ad735aa0 fileName - test2_1682932811768.png
+100 files deleted
+Finished. close db connection.
+```
+
+## 4. Delete files - mongo shell version
+- copy shell script to docker volume
+    - check out `docker-compose.yml` volumes section
+    ```YAML
+    ...
+    volumes:
+        - ./delete-image-file.sh:/scripts/delete_image_files.sh
+    ...
+    ```
+    - You can also just copy with command
+    ```
+    $ docker cp delete-image-file.sh mongo-db:/scripts/delete-image-file.sh
+    ```
+- run shell command
+    ```
+    $ docker exec -it mongo-db bash
+    $ cd scripts
+    $ mongo < delete-image-file.bash
+    ```
+
+    ```
+    root@b006de62514e:/scripts# mongo <delete_image_files.sh
+    MongoDB shell version v4.2.3
+    connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
+    Implicit session: session { "id" : UUID("1504248b-7546-4f8e-9f9c-6daac0e11d64") }
+    MongoDB server version: 4.2.3
+    switched to db welsh
+    use welsh dabatase
+    delete all files that end with .png
+    loop - 1: batch size - 10
+    doc: fileStoredId - ObjectId("644f7d7f32aa5dc26b4779ad") fileName - test2_1682931071957.png
+    doc: fileStoredId - ObjectId("644f7d7f32aa5dc26b4779b0") fileName - test2_1682931071972.png
+    doc: fileStoredId - ObjectId("644f7d7f32aa5dc26b4779b3") fileName - test2_1682931071977.png
+    doc: fileStoredId - ObjectId("644f7d7f32aa5dc26b4779b6") fileName - test2_1682931071984.png
+    doc: fileStoredId - ObjectId("644f7d7f32aa5dc26b4779b9") fileName - test2_1682931071990.png
+    doc: fileStoredId - ObjectId("644f7d7f32aa5dc26b4779bc") fileName - test2_1682931071994.png
+    doc: fileStoredId - ObjectId("644f7d7f32aa5dc26b4779bf") fileName - test2_1682931071999.png
+    doc: fileStoredId - ObjectId("644f7d8032aa5dc26b4779c2") fileName - test2_1682931072004.png
+    doc: fileStoredId - ObjectId("644f7d8032aa5dc26b4779c5") fileName - test2_1682931072007.png
+    doc: fileStoredId - ObjectId("644f7d8032aa5dc26b4779c8") fileName - test2_1682931072010.png
+    10files deleted
+    bye
     ```
