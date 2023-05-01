@@ -1,4 +1,4 @@
-# mongo-bulk-delete-file
+# mongo-upload-delete-file
 This repository contains a method for efficiently deleting numerous files stored in MongoDB. Uses GridFS to randomly generate image files (`.png`) and text files (`.txt`). In MongoDB, use GridFS for storing files larger than 16 MB. GridFS stores files in two collections `fs.chunks`, `fs.files`. Our goal is to find only image files(`.png`) among numerous documents and delete them all in both two collections.
 
 If you only want to see how to delete them, jump to `step 3 and 4`.
