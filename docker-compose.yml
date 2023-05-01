@@ -1,0 +1,13 @@
+version: '3.7'
+services:
+  db:
+    container_name: mongo-db
+    image: mongo:4.2.3
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+      - ./delete-image-file.sh:/scripts/delete_image_files.sh
+
+volumes:
+  mongo-data:
